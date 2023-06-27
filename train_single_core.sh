@@ -4,4 +4,4 @@
 # 	  --model van_b0 -b 128 --lr 1e-3 --drop-path 0.1
 
 
-python3 train.py imagenet --model van_b0 -b 128 --lr 1e-3 --drop-path 0.1
+python train.py tiny-imagenet-200 --model van_b0 -b 128 --lr 1e-3 --drop-path 0.1

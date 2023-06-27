@@ -11,7 +11,7 @@
 - downloaded tiny-imagenet dataset from `https://www.kaggle.com/datasets/akash2sharma/tiny-imagenet?resource=download` for testing
 - extracted zip file and placed it in `tiny-imagenet-200`
 ---
-- rename `tiny-imagenet-200` to `imagenet`
+<!-- - rename `tiny-imagenet-200` to `imagenet` -->
 - make train.sh executable using:- 
 
   ```chmod +x train.sh```
@@ -26,7 +26,7 @@
   ```conda env remove -n van```
 - create van environment with torchvison using:- 
 
-  ```conda create -n van pytorch torchvision  pytorch-cuda=11.7 -c pytorch -c nvidia```
+  ```conda install pytorch torchvision pytorch-cuda=11.8 -c pytorch -c nvidia```
 
 - run for single core using
 
