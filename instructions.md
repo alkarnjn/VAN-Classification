@@ -24,9 +24,8 @@
 - delete van conda environment using:-   
 
   ```conda env remove -n van```
-- create van environment with torchvison using:- 
-
-  ```conda install pytorch torchvision pytorch-cuda=11.8 -c pytorch -c nvidia```
+- create van environment with torchvison using:-
+  ```conda create -n van python=3.10 pytorch torchvision pytorch-cuda=11.8 -c pytorch -c nvidia```
 
 - run for single core using
 
