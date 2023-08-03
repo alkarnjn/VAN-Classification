@@ -5,6 +5,7 @@ output/
 *.zip
 
 
+.vscode
 ### Copied from github
 
 # Byte-compiled / optimized / DLL files

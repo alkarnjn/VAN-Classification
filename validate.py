@@ -24,7 +24,7 @@ from timm.data import create_dataset, create_loader, resolve_data_config, RealLa
 from timm.utils import accuracy, AverageMeter, natural_key, setup_default_logging, set_jit_legacy
 
 import models
-
+from dataset import CustomValidationDataset
 
 has_apex = False
 try:
@@ -147,6 +147,7 @@ def validate(args):
         in_chans=3,
         global_pool=args.gp,
         scriptable=args.torchscript)
+    # print(model)
     if args.num_classes is None:
         assert hasattr(model, 'num_classes'), 'Model must have `num_classes` attr if not set on cmd line/config.'
         args.num_classes = model.num_classes
@@ -180,17 +181,23 @@ def validate(args):
 
     # dataset = create_dataset(
     #     root=args.data, name=args.dataset, split=args.split,
-    #     download=False, load_bytes=args.tf_preprocessing, class_map=args.class_map)
+    #     load_bytes=args.tf_preprocessing, class_map=args.class_map)
+    # print("start")
+    # print(dataset)
+    # print("end")
 
-    dataset = create_dataset(
-        root=args.data, name=args.dataset, split=args.split,
-        load_bytes=args.tf_preprocessing, class_map=args.class_map)
+    # dataset = create_dataset(
+    #     root=args.data, name=args.dataset, split=args.split,
+    #     load_bytes=args.tf_preprocessing, class_map=args.class_map)
+
+    dataset = CustomValidationDataset(args.data)
 
 
     if args.valid_labels:
         with open(args.valid_labels, 'r') as f:
             valid_labels = {int(line.rstrip()) for line in f}
             valid_labels = [i in valid_labels for i in range(args.num_classes)]
+        
     else:
         valid_labels = None
 
@@ -198,20 +205,24 @@ def validate(args):
         real_labels = RealLabelsImagenet(dataset.filenames(basename=True), real_json=args.real_labels)
     else:
         real_labels = None
-
+    # print("start")
+    # print(dataset.filenames(basename=True))
+    # print("end")
     crop_pct = 1.0 if test_time_pool else data_config['crop_pct']
-    loader = create_loader(
-        dataset,
-        input_size=data_config['input_size'],
-        batch_size=args.batch_size,
-        use_prefetcher=args.prefetcher,
-        interpolation=data_config['interpolation'],
-        mean=data_config['mean'],
-        std=data_config['std'],
-        num_workers=args.workers,
-        crop_pct=crop_pct,
-        pin_memory=args.pin_mem,
-        tf_preprocessing=args.tf_preprocessing)
+    # loader = create_loader(
+    #     dataset,
+    #     input_size=data_config['input_size'],
+    #     batch_size=args.batch_size,
+    #     use_prefetcher=args.prefetcher,
+    #     interpolation=data_config['interpolation'],
+    #     mean=data_config['mean'],
+    #     std=data_config['std'],
+    #     num_workers=args.workers,
+    #     crop_pct=crop_pct,
+    #     pin_memory=args.pin_mem,
+    #     tf_preprocessing=args.tf_preprocessing)
+    
+    loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=False)
 
     batch_time = AverageMeter()
     losses = AverageMeter()
@@ -226,7 +237,9 @@ def validate(args):
             input = input.contiguous(memory_format=torch.channels_last)
         model(input)
         end = time.time()
-        for batch_idx, (input, target) in enumerate(loader):
+        for batch_idx, (input, target, image_paths) in enumerate(loader):
+            target = target.cuda()
+            input = input.cuda()
             if args.no_prefetcher:
                 target = target.cuda()
                 input = input.cuda()
@@ -235,7 +248,7 @@ def validate(args):
 
             # compute output
             with amp_autocast():
-                output = model(input)
+                output = model(input, image_paths)
 
             if valid_labels is not None:
                 output = output[:, valid_labels]

@@ -8,6 +8,7 @@ from timm.models.registry import register_model
 from timm.models.vision_transformer import _cfg
 import math
 
+c=0
 class Mlp(nn.Module):
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
         super().__init__()
@@ -177,9 +178,15 @@ class VAN(nn.Module):
                                             in_chans=in_chans if i == 0 else embed_dims[i - 1],
                                             embed_dim=embed_dims[i])
 
-            block = nn.ModuleList([Block(
-                dim=embed_dims[i], mlp_ratio=mlp_ratios[i], drop=drop_rate, drop_path=dpr[cur + j])
-                for j in range(depths[i])])
+            block = nn.ModuleList(
+                [
+                    Block(
+                            dim=embed_dims[i], 
+                            mlp_ratio=mlp_ratios[i], 
+                            drop=drop_rate, 
+                            drop_path=dpr[cur + j]
+                    ) for j in range(depths[i])
+                ])
             norm = norm_layer(embed_dims[i])
             cur += depths[i]
 
@@ -238,8 +245,21 @@ class VAN(nn.Module):
 
         return x.mean(dim=1)
 
-    def forward(self, x):
+    def forward(self, x, target = None):
+        print(self.num_stages)
         x = self.forward_features(x)
+        if target is not None:
+            try:
+                to_save = torch.load('features.pt')
+            except:
+                to_save = {}
+                
+            for feature, path in zip(x, target):
+                to_save[path.split('\\')[-1]] = feature.tolist()
+            
+            torch.save(to_save, 'features.pt')
+            print(len(to_save))
+
         x = self.head(x)
 
         return x
@@ -297,6 +317,7 @@ def van_b0(pretrained=False, **kwargs):
     model.default_cfg = _cfg()
     if pretrained:
         model = load_model_weights(model, "van_b0", kwargs)
+        # feature_vector=model.forward_features()
     return model
 
 
