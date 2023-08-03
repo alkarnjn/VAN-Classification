@@ -4,4 +4,7 @@
 # 	  --model van_b0 -b 128 --lr 1e-3 --drop-path 0.1
 
 
-python3 train.py imagenet --model van_b0 -b 128 --lr 1e-3 --drop-path 0.1
+python train.py  "D:/Others/fvc2002_out_splitted" --model van_b1 -b 128 --lr 1e-3 --drop-path 0.1 --num-classes 110 --epochs 200
+
+python validate.py "D:/Others/splitted_FVC2006DB3A/test" --model van_b1 -b 128 --num-classes 140
+
