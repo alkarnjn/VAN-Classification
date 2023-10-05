@@ -28,6 +28,7 @@ class CustomValidationDataset(Dataset):
 
     def __getitem__(self, index):
         image_path, label, class_name = self.samples[index]
+        # print(image_path, label, class_name)
         try:
             image = Image.open(image_path).convert('RGB')
         except:
@@ -41,3 +42,20 @@ class CustomValidationDataset(Dataset):
             image = self.transform(image)
         # print(image_path, label, class_name)
         return image, label, image_path
+# def __getitem__(self, index):
+#     image_path, label, class_name = self.samples[index]
+#     image = None  # Initialize image with a default value
+#     try:
+#         image = Image.open(image_path).convert('RGB')
+#     except Exception as e:
+#         print(f"Error loading image at {image_path}: {str(e)}")
+    
+#     if image is not None:  # Check if image was successfully loaded
+#         transform = transforms.ToTensor()
+
+#         # Convert the PIL image to a PyTorch tensor
+#         image = transform(image)
+#         if self.transform:
+#             image = self.transform(image)
+
+#     return image, label, image_path
